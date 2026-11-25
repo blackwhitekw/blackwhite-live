@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>مبيعات BW</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="مبيعات BW">
+<meta name="theme-color" content="#0b0b0c">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-180.png">
+<link rel="manifest" href="manifest.json">
+<style>
+  :root{--bg:#0b0b0c;--card:#17171a;--line:#2a2a2f;--txt:#f5f5f5;--mut:#9a9aa3;--up:#2fd27a;--down:#ff5d5d;--warn:#ffc53d;--acc:#ffffff}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--txt);font-family:-apple-system,"SF Arabic","Segoe UI",Tahoma,sans-serif;-webkit-font-smoothing:antialiased}
+  body{padding:max(10px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(14px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+  .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .brand{font-weight:800;letter-spacing:.5px;font-size:16px}
+  .brand small{display:block;font-weight:500;color:var(--mut);font-size:11px;margin-top:1px}
+  .live{display:flex;align-items:center;gap:6px;color:var(--mut);font-size:12px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--up);box-shadow:0 0 0 0 rgba(47,210,122,.6);animation:p 2s infinite}
+  .dot.stale{background:var(--warn);animation:none}.dot.bad{background:var(--down);animation:none}
+  @keyframes p{70%{box-shadow:0 0 0 8px rgba(47,210,122,0)}100%{box-shadow:0 0 0 0 rgba(47,210,122,0)}}
+  .banner{display:none;border-radius:10px;padding:8px 10px;margin-bottom:8px;font-weight:700;font-size:13px}
+  .banner.warn{display:block;background:rgba(255,197,61,.12);color:var(--warn);border:1px solid rgba(255,197,61,.4)}
+  .banner.bad{display:block;background:rgba(255,93,93,.12);color:var(--down);border:1px solid rgba(255,93,93,.4)}
+  .hero{background:linear-gradient(160deg,#1d1d21,#111113);border:1px solid var(--line);border-radius:16px;padding:10px 12px 12px;text-align:center}
+  .hero .lbl{color:var(--mut);font-size:12px;font-weight:600}
+  .hero .big{font-size:clamp(44px,13vw,58px);font-weight:900;line-height:1.1;margin:2px 0 0;font-variant-numeric:tabular-nums;direction:ltr}
+  .hero .big .dec{font-size:.4em;color:var(--mut);font-weight:700}
+  .hero .big .kd{font-size:.3em;color:var(--mut);font-weight:700;margin-left:6px}
+  .delta{display:inline-flex;align-items:center;gap:5px;margin-top:6px;padding:4px 10px;border-radius:999px;font-weight:800;font-size:14px}
+  .delta.up{background:rgba(47,210,122,.14);color:var(--up)}.delta.down{background:rgba(255,93,93,.14);color:var(--down)}.delta.na{background:#222;color:var(--mut)}
+  .delta-sub{color:var(--mut);font-size:11px;margin-top:4px}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px 4px;text-align:center}
+  .stat b{display:block;font-size:19px;font-weight:800;font-variant-numeric:tabular-nums}
+  .stat span{color:var(--mut);font-size:11px;font-weight:600}
+  .stat.ret b{color:var(--down)}
+  h2{font-size:12px;color:var(--mut);font-weight:700;margin:10px 4px 5px}
+  .list{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:2px 12px}
+  .row{padding:6px 0;border-bottom:1px solid var(--line)}
+  .row:last-child{border-bottom:0}
+  .row.online .n{text-decoration:underline;text-underline-offset:4px}
+  .row .h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .row .n{font-size:15px;font-weight:800;white-space:nowrap}
+  .row .q{color:var(--mut);font-size:11px;font-weight:600;margin-inline-start:6px}
+  .row .a{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}
+  .bar{height:4px;background:#26262b;border-radius:99px;margin-top:4px;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--acc);border-radius:99px}
+  .bar i.hi{background:var(--up)}.bar i.lo{background:var(--down)}
+  .tg{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;font-size:11px;font-weight:900;margin-inline-end:6px;vertical-align:2px;border:1.5px solid}
+  .tg.ok{color:var(--up);border-color:var(--up)}.tg.no{color:var(--down);border-color:var(--down)}
+  .foot{color:var(--mut);font-size:10.5px;text-align:center;margin-top:8px;line-height:1.6}
+  .pin{max-width:340px;margin:18vh auto 0;text-align:center}
+  .pin h1{font-size:24px;margin-bottom:6px}.pin p{color:var(--mut);margin-bottom:18px}
+  .pin input{width:100%;font-size:28px;text-align:center;padding:14px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--txt);letter-spacing:8px}
+  .pin button{width:100%;margin-top:12px;font-size:20px;font-weight:800;padding:14px;border-radius:14px;border:0;background:var(--acc);color:#000}
+  .pin .err{color:var(--down);margin-top:10px;min-height:20px}
+  #app{display:none;transform-origin:top right;position:absolute;top:max(10px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right))}
+  html,body{overflow:hidden;height:100%}
+  @media (orientation:landscape){
+    #app.on{display:grid !important;grid-template-columns:1fr 1.15fr;column-gap:12px;align-items:start}
+    #app .top,#app .banner{grid-column:1 / -1}
+    #app .left{grid-column:1}#app .right{grid-column:2}
+    #app h2{margin-top:0}
+  }
+</style>
+</head>
+<body>
+<div class="pin" id="pinBox">
+  <h1>مبيعات اليوم</h1>
+  <p>اكتب الرمز مرة وحدة، والصفحة تحفظه على هذا الجهاز</p>
+  <input id="pinIn" type="password" inputmode="numeric" autocomplete="off">
+  <button id="pinBtn">دخول</button>
+  <div class="err" id="pinErr"></div>
+</div>
+
+<div id="app">
+  <div class="top">
+    <div class="brand">BLACKWHITE<small id="dateTxt">مبيعات اليوم</small></div>
+    <div class="live"><span id="updTxt">—</span><span class="dot" id="dot"></span></div>
+  </div>
+  <div class="banner" id="banner"></div>
+
+  <div class="left">
+  <div class="hero">
+    <div class="lbl">صافي المبيعات (بعد المرتجعات)</div>
+    <div class="big" id="net">—</div>
+    <div class="delta na" id="delta">—</div>
+    <div class="delta-sub" id="deltaSub"></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><b id="inv">—</b><span>فاتورة</span></div>
+    <div class="stat"><b id="avg">—</b><span>متوسط الفاتورة</span></div>
+    <div class="stat ret"><b id="ret">—</b><span>مرتجعات</span></div>
+  </div>
+  </div>
+  <div class="right">
+  <h2>الفروع والأونلاين</h2>
+  <div class="list" id="branches"></div>
+
+  <div class="foot" id="foot"></div>
+  </div>
+</div>
+
+<script>
+const REFRESH_MS = 30 * 1000;
+const STALE_MIN = 2;
+let pin = null;
+try { pin = localStorage.getItem('bw_pin'); } catch (e) {}
+
+const fmt3 = n => Number(n).toLocaleString('en-US', {minimumFractionDigits: 3, maximumFractionDigits: 3});
+const fmt0 = n => Math.round(Number(n)).toLocaleString('en-US');
+const hhmm = d => d.toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kuwait'});
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+const API = 'https://script.google.com/macros/s/AKfycbzN2YLki9raVZU9cas9-wtkXScLXdGjpe3JF-S9kPouuoMNmp6ng7Tug6Koxpz3oCsx/exec';
+async function call(p) {
+  const r = await fetch(API, {method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'},
+                              body: JSON.stringify({action: 'get', pin: p}), cache: 'no-store'});
+  if (!r.ok) throw new Error('http ' + r.status);
+  return r.json();
+}
+
+async function load(first) {
+  try {
+    const d = await call(pin);
+    if (!d.ok) {
+      try { localStorage.removeItem('bw_pin'); } catch (e) {}
+      showPin(first ? '' : 'الرمز غير صحيح');
+      return;
+    }
+    try { localStorage.setItem('bw_pin', pin); } catch (e) {}
+    document.getElementById('pinBox').style.display = 'none';
+    const app = document.getElementById('app'); app.style.display = 'block'; app.classList.add('on');
+    render(d);
+    fit(); keepAwake();
+  } catch (e) {
+    setBanner('bad', 'ما في اتصال بالإنترنت — بحاول مرة ثانية');
+  }
+}
+
+function setBanner(kind, msg) {
+  const b = document.getElementById('banner');
+  b.className = 'banner ' + (kind || '');
+  b.textContent = msg || '';
+}
+
+function render(d) {
+  const L = d.latest, now = new Date(d.serverNow);
+  const dot = document.getElementById('dot');
+  if (!L) { setBanner('warn', 'بانتظار أول تحديث من الروبوت…'); dot.className = 'dot stale'; return; }
+
+  const upd = new Date(L.updated_at);
+  const ageMin = (now - upd) / 60000;
+  document.getElementById('updTxt').textContent = 'آخر تحديث ' + hhmm(upd);
+  document.getElementById('dateTxt').textContent = new Date(L.updated_at).toLocaleDateString('ar-KW', {weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Asia/Kuwait'});
+
+  const r = d.robot || {};
+  if (r.status === 'login_required') { setBanner('bad', '⚠️ الروبوت يحتاج تسجيل دخول في OSOSS — الأرقام موقفة'); dot.className = 'dot bad'; }
+  else if (ageMin > STALE_MIN) { setBanner('warn', '⚠️ آخر تحديث قبل ' + Math.round(ageMin) + ' دقيقة — تأكد إن جهاز المكتب شغال'); dot.className = 'dot stale'; }
+  else if (r.status === 'error') { setBanner('warn', 'آخر محاولة تحديث فشلت — الأرقام من ' + hhmm(upd)); dot.className = 'dot stale'; }
+  else { setBanner('', ''); dot.className = 'dot'; }
+
+  const T = L.today, Y = L.yesterday_same_time;
+  const [whole, dec] = fmt3(T.net).split('.');
+  document.getElementById('net').innerHTML = esc(whole) + '<span class="dec">.' + esc(dec) + '</span><span class="kd">د.ك</span>';
+  document.getElementById('inv').textContent = T.invoices;
+  document.getElementById('avg').textContent = T.invoices ? fmt0(T.gross / T.invoices) : '0';
+  document.getElementById('ret').textContent = fmt0(T.returns);
+
+  const dl = document.getElementById('delta'), ds = document.getElementById('deltaSub');
+  if (Y && Y.net > 0) {
+    const pct = (T.net - Y.net) / Y.net * 100;
+    const up = pct >= 0;
+    dl.className = 'delta ' + (up ? 'up' : 'down');
+    dl.textContent = (up ? '▲ ' : '▼ ') + Math.abs(pct).toFixed(0) + '% عن أمس';
+    ds.textContent = 'أمس لين الساعة ' + Y.until + ': ' + fmt3(Y.net) + ' د.ك';
+  } else { dl.className = 'delta na'; dl.textContent = 'ما في مقارنة مع أمس'; ds.textContent = ''; }
+
+  const br = (T.branches || []).slice().sort((a, b) => b.amount - a.amount);
+  const max = Math.max(1, ...br.map(b => b.amount));
+  const hasTarget = br.some(b => b.status);
+  document.getElementById('branches').innerHTML = br.map(b =>
+    '<div class="row' + (b.online ? ' online' : '') + '"><div class="h"><div class="n">' +
+    (b.status ? '<span class="tg ' + (b.status === 'good' ? 'ok">✓' : 'no">✕') + '</span>' : '') + esc(b.name_ar) +
+    '<span class="q">' + b.qty + ' قطعة</span></div><div class="a">' + fmt3(b.amount) + '</div></div>' +
+    '<div class="bar"><i class="' + (b.amount > max / 2 ? 'hi' : 'lo') + '" style="width:' + (b.amount / max * 100).toFixed(1) + '%"></i></div></div>'
+  ).join('');
+
+  document.getElementById('foot').innerHTML =
+    (hasTarget ? '<span style="color:var(--up)">✓</span> ماشي على التارجت · <span style="color:var(--down)">✕</span> متأخر عن التارجت · الشريط: <span style="color:var(--up)">أخضر</span> مبيعات جيدة، <span style="color:var(--down)">أحمر</span> وسط وضعيفة<br>' : '') +
+    'الفواتير ' + fmt3(T.gross) + ' − المرتجعات ' + fmt3(T.returns) + ' د.ك · OSOSS · تحديث كل 30 ثانية';
+}
+
+// يكبّر أو يصغّر الصفحة على قد الشاشة، بدون أي سكرول
+function fit() {
+  const app = document.getElementById('app');
+  if (app.style.display === 'none') return;
+  const cs = getComputedStyle(document.body);
+  const availH = window.innerHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+  const availW = document.body.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  app.style.transform = 'none';
+  app.style.width = availW + 'px';
+  let k = Math.min(1.35, availH / app.scrollHeight);
+  for (let i = 0; i < 3; i++) {          // نعيد القياس لأن العرض يتغير مع التكبير
+    app.style.width = (availW / k) + 'px';
+    k = Math.min(1.35, availH / app.scrollHeight);
+  }
+  app.style.width = (availW / k) + 'px';
+  app.style.transform = 'scale(' + k + ')';
+}
+window.addEventListener('resize', fit);
+window.addEventListener('orientationchange', () => setTimeout(fit, 300));
+
+// يمنع الشاشة تطفي إذا الجهاز يدعم هالشي
+let wakeLock = null;
+async function keepAwake() {
+  try { if ('wakeLock' in navigator && !wakeLock) { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => wakeLock = null); } } catch (e) {}
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) keepAwake(); });
+
+function showPin(err) {
+  document.getElementById('app').style.display = 'none'; document.getElementById('app').classList.remove('on');
+  document.getElementById('pinBox').style.display = 'block';
+  document.getElementById('pinErr').textContent = err || '';
+}
+
+document.getElementById('pinBtn').onclick = () => { pin = document.getElementById('pinIn').value.trim(); load(false); };
+document.getElementById('pinIn').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('pinBtn').click(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden && pin) load(false); });
+
+if (pin) load(true); else showPin('');
+setInterval(() => { if (pin) load(false); }, REFRESH_MS);
+</script>
+</body>
+</html>
