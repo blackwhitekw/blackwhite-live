@@ -35,6 +35,8 @@
   .delta{display:inline-flex;align-items:center;gap:5px;margin-top:6px;padding:4px 10px;border-radius:999px;font-weight:800;font-size:14px}
   .delta.up{background:rgba(47,210,122,.14);color:var(--up)}.delta.down{background:rgba(255,93,93,.14);color:var(--down)}.delta.na{background:#222;color:var(--mut)}
   .delta-sub{color:var(--mut);font-size:11px;margin-top:4px}
+  .cmps{display:flex;justify-content:center;gap:16px;flex-wrap:wrap}
+  .cmps>div{display:flex;flex-direction:column;align-items:center}
   .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0}
   .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px 4px;text-align:center}
   .stat b{display:block;font-size:19px;font-weight:800;font-variant-numeric:tabular-nums}
@@ -54,7 +56,8 @@
   .bar i.hi{background:var(--up)}.bar i.lo{background:var(--down)}
   .tg{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;font-size:11px;font-weight:900;margin-inline-end:6px;vertical-align:2px;border:1.5px solid}
   .tg.ok{color:var(--up);border-color:var(--up)}.tg.no{color:var(--down);border-color:var(--down)}
-  .foot{color:var(--mut);font-size:10.5px;text-align:center;margin-top:8px;line-height:1.6}
+  .foot{color:var(--mut);font-size:12px;text-align:center;margin-top:8px;line-height:1.7}
+  .foot b{color:var(--txt,#f2f2f2);font-weight:800;font-variant-numeric:tabular-nums}
   .pin{max-width:340px;margin:18vh auto 0;text-align:center}
   .pin h1{font-size:24px;margin-bottom:6px}.pin p{color:var(--mut);margin-bottom:18px}
   .pin input{width:100%;font-size:28px;text-align:center;padding:14px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--txt);letter-spacing:8px}
@@ -90,8 +93,10 @@
   <div class="hero">
     <div class="lbl">صافي المبيعات (بعد المرتجعات)</div>
     <div class="big" id="net">—</div>
-    <div class="delta na" id="delta">—</div>
-    <div class="delta-sub" id="deltaSub"></div>
+    <div class="cmps">
+      <div><div class="delta na" id="delta">—</div><div class="delta-sub" id="deltaSub"></div></div>
+      <div id="lyBox"><div class="delta na" id="deltaLy">—</div><div class="delta-sub" id="deltaLySub"></div></div>
+    </div>
   </div>
 
   <div class="stats">
@@ -174,14 +179,14 @@ function render(d) {
   document.getElementById('avg').textContent = T.invoices ? fmt0(T.gross / T.invoices) : '0';
   document.getElementById('ret').textContent = fmt0(T.returns);
 
-  const dl = document.getElementById('delta'), ds = document.getElementById('deltaSub');
-  if (Y && Y.net > 0) {
-    const pct = (T.net - Y.net) / Y.net * 100;
-    const up = pct >= 0;
-    dl.className = 'delta ' + (up ? 'up' : 'down');
-    dl.textContent = (up ? '▲ ' : '▼ ') + Math.abs(pct).toFixed(0) + '% عن أمس';
-    ds.textContent = 'أمس لين الساعة ' + Y.until + ': ' + fmt3(Y.net) + ' د.ك';
-  } else { dl.className = 'delta na'; dl.textContent = 'ما في مقارنة مع أمس'; ds.textContent = ''; }
+  compare('delta', 'deltaSub', T.net, Y, 'عن أمس', Y && ('أمس لين ' + Y.until));
+  const LY = L.last_year_same_time;
+  document.getElementById('lyBox').style.display = LY ? '' : 'none';
+  if (LY) {
+    const lyDay = new Date(LY.date + 'T12:00:00+03:00').toLocaleDateString('ar-KW', {weekday: 'long', timeZone: 'Asia/Kuwait'});
+    const [yy, mm, dd] = LY.date.split('-');
+    compare('deltaLy', 'deltaLySub', T.net, LY, 'عن السنة الماضية', lyDay + ' ' + dd + '/' + mm + '/' + yy + ' لين ' + LY.until);
+  }
 
   const br = (T.branches || []).slice().sort((a, b) => b.amount - a.amount);
   const max = Math.max(1, ...br.map(b => b.amount));
@@ -193,9 +198,30 @@ function render(d) {
     '<div class="bar"><i class="' + (b.amount > max / 2 ? 'hi' : 'lo') + '" style="width:' + (b.amount / max * 100).toFixed(1) + '%"></i></div></div>'
   ).join('');
 
-  document.getElementById('foot').innerHTML =
-    (hasTarget ? '<span style="color:var(--up)">✓</span> ماشي على التارجت · <span style="color:var(--down)">✕</span> متأخر عن التارجت · الشريط: <span style="color:var(--up)">أخضر</span> مبيعات جيدة، <span style="color:var(--down)">أحمر</span> وسط وضعيفة<br>' : '') +
-    'الفواتير ' + fmt3(T.gross) + ' − المرتجعات ' + fmt3(T.returns) + ' د.ك · OSOSS · تحديث كل 30 ثانية';
+  // توقع نهاية اليوم: المحقق ÷ النسبة اللي مرّت من يوم البيع
+  const G = L.target, foot = [];
+  if (G && G.need > 0 && G.expected > 0) {
+    const pace = G.expected / G.need;
+    if (pace >= 0.999) foot.push('📈 سكّرنا اليوم على <b>' + fmt0(G.amount) + '</b> د.ك · المطلوب ' + fmt0(G.need));
+    else if (pace >= 0.08) foot.push('📈 بهالسرعة نسكّر اليوم على ≈ <b>' + fmt0(G.amount / pace) + '</b> د.ك · المطلوب ' + fmt0(G.need));
+  }
+  // مبيعات المحلات بدون الأونلاين ومخزن الماركتينج × 0.5%
+  const shops = br.filter(b => !b.online && b.name !== 'مخزن الماركتينج').reduce((s, b) => s + b.amount, 0);
+  foot.push('<b>' + fmt3(shops * 0.005) + '</b> د.ك');
+  document.getElementById('foot').innerHTML = foot.join('<br>');
+}
+
+// نسبة الفرق عن يوم سابق لين نفس الساعة
+function compare(pillId, subId, net, P, label, when) {
+  const dl = document.getElementById(pillId), ds = document.getElementById(subId);
+  if (P && P.net > 0) {
+    const pct = (net - P.net) / P.net * 100, up = pct >= 0;
+    dl.className = 'delta ' + (up ? 'up' : 'down');
+    dl.textContent = (up ? '▲ ' : '▼ ') + Math.abs(pct).toFixed(0) + '% ' + label;
+    ds.textContent = when + ': ' + fmt3(P.net) + ' د.ك';
+  } else if (P) {
+    dl.className = 'delta na'; dl.textContent = 'ما في مبيعات ' + label.replace('عن ', ''); ds.textContent = when;
+  } else { dl.className = 'delta na'; dl.textContent = 'ما في مقارنة ' + label.replace('عن ', 'مع '); ds.textContent = ''; }
 }
 
 // يكبّر أو يصغّر الصفحة على قد الشاشة، بدون أي سكرول
