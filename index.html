@@ -205,9 +205,16 @@ function render(d) {
     if (pace >= 0.999) foot.push('📈 سكّرنا اليوم على <b>' + fmt0(G.amount) + '</b> د.ك · المطلوب ' + fmt0(G.need));
     else if (pace >= 0.08) foot.push('📈 بهالسرعة نسكّر اليوم على ≈ <b>' + fmt0(G.amount / pace) + '</b> د.ك · المطلوب ' + fmt0(G.need));
   }
-  // مبيعات المحلات بدون الأونلاين ومخزن الماركتينج × 0.5%
-  const shops = br.filter(b => !b.online && b.name !== 'مخزن الماركتينج').reduce((s, b) => s + b.amount, 0);
-  foot.push('<b>' + fmt3(shops * 0.005) + '</b> د.ك');
+  // مبيعات المحلات بدون الأونلاين ومخزن الماركتينج × 0.5% — اليوم، ومن أول الشهر لين آخر تحديث
+  const isShop = (name, online) => !online && name !== 'مخزن الماركتينج' && name !== 'Website Branch';
+  const shops = br.filter(b => isShop(b.name, b.online)).reduce((s, b) => s + b.amount, 0);
+  let line = 'اليوم <b>' + fmt3(shops * 0.005) + '</b> د.ك';
+  const M = L.mtd_before_today;
+  if (M) {
+    const before = Object.keys(M).filter(n => isShop(n, false)).reduce((s, n) => s + M[n], 0);
+    line += ' · الشهر <b>' + fmt3((before + shops) * 0.005) + '</b> د.ك';
+  }
+  foot.push(line);
   document.getElementById('foot').innerHTML = foot.join('<br>');
 }
 
