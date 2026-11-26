@@ -227,7 +227,9 @@ function compare(pillId, subId, net, P, label, when) {
     dl.textContent = (up ? '▲ ' : '▼ ') + Math.abs(pct).toFixed(0) + '% ' + label;
     ds.textContent = when + ': ' + fmt3(P.net) + ' د.ك';
   } else if (P) {
-    dl.className = 'delta na'; dl.textContent = 'ما في مبيعات ' + label.replace('عن ', ''); ds.textContent = when;
+    // الصافي صفر أو بالسالب (مرتجعات أكثر من المبيعات لين هالساعة) فالنسبة ما لها معنى
+    dl.className = 'delta na'; dl.textContent = 'ما في مقارنة ' + label.replace('عن ', 'مع ');
+    ds.textContent = when + ': ' + fmt3(P.net) + ' د.ك';
   } else { dl.className = 'delta na'; dl.textContent = 'ما في مقارنة ' + label.replace('عن ', 'مع '); ds.textContent = ''; }
 }
 
